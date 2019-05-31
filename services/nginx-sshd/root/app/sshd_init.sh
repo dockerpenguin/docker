@@ -64,4 +64,4 @@ fi
 echo "`date`: ssh-keygen -A"
 ssh-keygen -A
 echo "`date`: exec /usr/sbin/sshd"
-exec /usr/sbin/sshd
+exec /usr/sbin/sshd -D

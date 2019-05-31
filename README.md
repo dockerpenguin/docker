@@ -18,7 +18,7 @@ MacOS Sierra version: 10.12.6
 
 在nginx:alpine镜像上叠加了openssh、sftp，可以在容器启动时自动创建新用户。主要是为了方便通过ssh自动部署一些静态网站上去方便测试。
 
-安装了supervisor来管理这两个应用，带来的问题是体积从原来的17M突破了70M，后面考虑换一种启动方式，缩小体积。
+安装了supervisor来管理这两个应用，带来的问题是体积从原来的20M多突破到70M以上，后面考虑换一种启动方式，缩小体积。
 
 ### 1.1参数说明
 
@@ -69,6 +69,15 @@ docker run --name nginx_sshd  -p 1080:80 -p 1022:22 \
 
 ssh foo@127.0.0.1 -p 1022 
 
-若你提供的 /<YOUR_SSH_HOME>时空目录，容器启动时会自动给foo用户生成的ssh证书文件。
+若你提供的 /<YOUR_SSH_HOME>是个空目录，容器启动时会自动给foo用户生成的ssh证书文件。
 
 如果用自己已有的ssh证书登录，确保提供的 /<YOUR_SSH_HOME>目录存在".ssh/authorized_keys"文件。
+
+### 1.3 修改启动方式为shell
+
+源代码tag：v1.0.1
+
+功能不变，镜像的启动方式由原来的supervisor改成shell脚本启动。
+
+变动效果：前者构建的镜像体积近80M，后者构建后镜像的体积30M出头。
+
