@@ -27,37 +27,46 @@ MacOS Sierra version: 10.12.6
 | APP_USER                                         | 如果需要使用新用户名，容器启动时自动创建以此命名的新用户     |                   |
 | APP_PASSWORD                                     | 创建新用户的前提下，设置新用户密码（不安全，docker inspect能查看到） |                   |
 | APP_PASSWORD_CRYPT                               | 同上，但是SHA512加密后的密码文，推荐使用的安全配置密码的方法（创建新用户时，密码未指定则自动设置为空） |                   |
-| DISABLE_APP_USER_KEYGEN                          | 创建新用户时默认会在新用户/home/<APP_USER>目录下生成ssh证书。不需要此功能则设置true | false             |
+| DISABLE_APP_USER_KEYGEN                          | 创建新用户时默认会在新用户/home/${APP_USER}目录下生成ssh证书。不需要此功能则设置true | false             |
 | DISABLE_CONFIG_GEN                               | 容器启动时默认会根据环境变量生成sshd_config配置文件。不需要此功能则设置true | false             |
 | SSH_PERMIT_ROOT_LOGIN                            | sshd配置：允许root登录的方式                                 | prohibit-password |
 | SSH_PASSWORD_AUTH_ALLOWED                        | sshd配置：是否允许使用密码登录                               | no                |
 | SSH_USE_PAM_ALLOWED                              | sshd配置：是否开启可插入身份验证模块（与上面密码验证一起开启） | no                |
 | SSH_EMPTY_PASSWORD_ALLOWED                       | sshd配置：是否允许空密码用户登录                             | no                |
-| 上面是ssh、容器等相关配置，nginx相关配置参考官网 | nginx容器官网：<https://hub.docker.com/_/nginx>              |                   |
+| 上面是ssh、容器等相关配置，nginx相关配置参考官网 | nginx容器官网：https://hub.docker.com/_/nginx                |                   |
 
 ### 1.2 启动例子
 
-启动后容器名为nginx_sshd, nginx的80端口映射到宿主机1080，ssh的22端口映射到宿主机1022，<YOUR_SITE_DIR>指你需要发布的静态网页地址，<YOUR_SSH_HOME>指你自己提供的ssh证书目录（里面要包含.ssh/authorized_keys文件，它包含了你要用的id_rsa.pub的信息）
+镜像启动为容器的主要参数如下：
 
-1、通过root用户ssh证书登录，提供.ssh证书所在目录/<YOUR_SSH_HOME>挂载到目标/root目录
+> -p 1080:80  nginx的80端口映射到宿主机1080
+>
+> -p 1022:22  ssh的22端口映射到宿主机1022
+>
+> YOUR_SITE_DIR 指你需要发布的静态网页目录
+>
+> YOUR_SSH_HOME 指你提供的ssh证书目录（若自行提供证书，里面要包含.ssh/authorized_keys文件，它包含了你要用的id_rsa.pub的信息。若目录为空，默认会自动生成相关证书。）
 
-```
+1、通过root用户ssh证书登录，提供.ssh证书所在目录/YOUR_SSH_HOME挂载到目标/root目录
+
+```dockerfile
 docker run --name nginx_sshd  -p 1080:80 -p 1022:22 \
--v /<YOUR_SITE_DIR>:/usr/share/nginx/html:ro \
--v /<YOUR_SSH_HOME>:/root \ 
+-v /YOUR_SITE_DIR:/usr/share/nginx/html:ro \
+-v /YOUR_SSH_HOME:/root \ 
 -d dockerpenguin/nginx-sshd
 ```
 
 启动后即可通过浏览器访问127.0.0.1:1080查看发布到nginx的网页。
 
-ssh root@127.0.0.1 -p 1022 -i <你的id_rsa证书文件>
+```shell
+ssh root@127.0.0.1 -p 1022 -i 你的id_rsa证书文件
+```
 
 2、创建新用户foo，并使用密码foo登录
 
-```
+```dockerfile
 docker run --name nginx_sshd  -p 1080:80 -p 1022:22 \
--v /<YOUR_SITE_DIR>:/usr/share/nginx/html:ro \
--v /<YOUR_SSH_HOME>:/home/foo \ 
+-v /YOUR_SITE_DIR:/usr/share/nginx/html:ro \
 -e SSH_USE_PAM_ALLOWED=yes \
 -e SSH_PASSWORD_AUTH_ALLOWED=yes \
 -e APP_USER=foo \
@@ -67,11 +76,9 @@ docker run --name nginx_sshd  -p 1080:80 -p 1022:22 \
 
 会自动创建一个foo用户，并设定好初始密码。执行下面命令登录时会要求你输入密码验证。
 
+```shell
 ssh foo@127.0.0.1 -p 1022 
-
-若你提供的 /<YOUR_SSH_HOME>是个空目录，容器启动时会自动给foo用户生成的ssh证书文件。
-
-如果用自己已有的ssh证书登录，确保提供的 /<YOUR_SSH_HOME>目录存在".ssh/authorized_keys"文件。
+```
 
 ### 1.3 修改启动方式为shell
 
