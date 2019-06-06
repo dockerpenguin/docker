@@ -1,0 +1,24 @@
+image: docker:stable
+
+variables:
+  DB: docker build --pull --no-cache --force-rm=true
+
+before_script:
+  - whoami
+  - docker info
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+stages:
+  - build
+
+build-master:
+  stage: build
+  script:
+    - cd services/ssh-container
+    - $DB -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  only:
+    - master
+  tags:
+    - host-docker
+
