@@ -1,3 +1,11 @@
+# 测试访问外部registry
+# 下面变量可在gitlab项目的变量功能中定义，方便脚本使用
+#
+# CUSTOM_CI_REGISTRY='registry.example.com:10043'
+# CUSTOM_CI_REGISTRY_IMAGE='registry.example.com:10043/root/docker'
+# CUSTOM_CI_REGISTRY_PASSWORD='secret'
+# CUSTOM_CI_REGISTRY_USER='gitlab-ci-token'
+
 image: docker:git
 
 variables:
@@ -8,11 +16,15 @@ variables:
 services:
  - name: docker:dind
    command: ["--registry-mirror=https://registry.docker-cn.com",
-             "--insecure-registry=https://gitlab.example.com:4567"]
+             "--insecure-registry=https://gitlab.example.com:4567",
+             "--insecure-registry=https://registry.example.com:10043"]
 
 before_script:
+ - whoami
+ - pwd
  - docker info
- - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+ - echo CI_REGISTRY $CI_REGISTRY
+ - docker login -u $CUSTOM_CI_REGISTRY_USER -p $CUSTOM_CI_REGISTRY_PASSWORD $CUSTOM_CI_REGISTRY
 
 stages:
  - build
@@ -31,8 +43,9 @@ build:
   stage: build
   script:
    - cd services/ssh-container
-   - $DB -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
-   - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+   - $DB -t $CUSTOM_CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG -t $CUSTOM_CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+   - docker push $CUSTOM_CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+   - docker push $CUSTOM_CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
   except:
    - master
   tags:
