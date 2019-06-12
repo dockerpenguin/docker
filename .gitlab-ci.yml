@@ -3,7 +3,7 @@
 #
 # CUSTOM_CI_REGISTRY='registry.example.com:10043'
 # CUSTOM_CI_REGISTRY_IMAGE='registry.example.com:10043/root/docker'
-# CUSTOM_CI_REGISTRY_PASSWORD='secret'
+# CUSTOM_CI_REGISTRY_PASSWORD='mysecret'
 # CUSTOM_CI_REGISTRY_USER='gitlab-ci-token'
 
 image: docker:git
