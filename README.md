@@ -14,3 +14,8 @@
 
 ### [2、ssh-container: 用数据卷共享功能管理ssh证书](services/ssh-container/README.md)
 
+## 二、应用类
+
+在一些应用软件上加一些功能。
+
+### [1、registry-envsubst: registry配置文件支持模版化生成](applications/registry-envsubst/README.md)
