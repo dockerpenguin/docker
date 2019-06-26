@@ -21,3 +21,5 @@
 ### [1、registry-envsubst: registry配置文件支持模版化生成](applications/registry-envsubst/README.md)
 
 ### [2、registry-web-envsubst: registry-web配置文件支持模版化生成](applications/registry-web-envsubst/README.md)
+
+### [3、jenkins-gerrit: jenkins预安装gerrit集成插件](applications/jenkins-gerrit/README.md)
